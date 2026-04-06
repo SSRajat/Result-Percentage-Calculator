@@ -1,0 +1,905 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Result Percentage Calculator</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;500;700;900&family=Noto+Sans+Devanagari:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <style>
+        :root {
+            --bg: #0a0e1a;
+            --card: #111827;
+            --card-border: #1e293b;
+            --fg: #f1f5f9;
+            --muted: #94a3b8;
+            --accent: #00e68a;
+            --accent-dim: rgba(0, 230, 138, 0.12);
+            --danger: #ff4d6a;
+            --danger-dim: rgba(255, 77, 106, 0.12);
+            --warn: #ffb830;
+            --warn-dim: rgba(255, 184, 48, 0.12);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Poppins', 'Noto Sans Devanagari', sans-serif;
+            background: var(--bg);
+            color: var(--fg);
+            min-height: 100vh;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        /* === बैकग्राउंड इफेक्ट === */
+        .bg-glow {
+            position: fixed;
+            border-radius: 50%;
+            filter: blur(120px);
+            pointer-events: none;
+            z-index: 0;
+            animation: floatGlow 8s ease-in-out infinite alternate;
+        }
+        .bg-glow.one {
+            width: 500px; height: 500px;
+            background: rgba(0, 230, 138, 0.08);
+            top: -150px; left: -100px;
+        }
+        .bg-glow.two {
+            width: 400px; height: 400px;
+            background: rgba(0, 180, 230, 0.06);
+            bottom: -100px; right: -80px;
+            animation-delay: -4s;
+        }
+        .bg-glow.three {
+            width: 300px; height: 300px;
+            background: rgba(255, 184, 48, 0.05);
+            top: 50%; left: 60%;
+            animation-delay: -2s;
+        }
+
+        @keyframes floatGlow {
+            0% { transform: translate(0, 0) scale(1); }
+            100% { transform: translate(30px, -20px) scale(1.15); }
+        }
+
+        /* === ग्रिड पैटर्न === */
+        .grid-pattern {
+            position: fixed;
+            inset: 0;
+            background-image:
+                linear-gradient(rgba(255,255,255,0.015) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255,255,255,0.015) 1px, transparent 1px);
+            background-size: 60px 60px;
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        /* === मेन कंटेनर === */
+        .container {
+            position: relative;
+            z-index: 1;
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 40px 20px 60px;
+        }
+
+        /* === हेडर === */
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            animation: slideDown 0.7s ease-out;
+        }
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .header-icon {
+            width: 70px; height: 70px;
+            border-radius: 20px;
+            background: linear-gradient(135deg, var(--accent), #00b8d4);
+            display: flex; align-items: center; justify-content: center;
+            margin: 0 auto 18px;
+            font-size: 30px; color: var(--bg);
+            box-shadow: 0 8px 32px rgba(0, 230, 138, 0.3);
+        }
+
+        .header h1 {
+            font-size: clamp(1.8rem, 5vw, 2.6rem);
+            font-weight: 900;
+            letter-spacing: -0.5px;
+            background: linear-gradient(135deg, var(--fg), var(--accent));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            line-height: 1.2;
+        }
+        .header p {
+            color: var(--muted);
+            font-size: 0.95rem;
+            margin-top: 8px;
+            font-weight: 300;
+        }
+
+        /* === कार्ड === */
+        .card {
+            background: var(--card);
+            border: 1px solid var(--card-border);
+            border-radius: 20px;
+            padding: 28px;
+            margin-bottom: 24px;
+            animation: fadeUp 0.6s ease-out both;
+            transition: border-color 0.3s;
+        }
+        .card:hover {
+            border-color: rgba(0, 230, 138, 0.2);
+        }
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(24px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .card-title {
+            font-size: 1.05rem;
+            font-weight: 700;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .card-title i {
+            color: var(--accent);
+            font-size: 1.1rem;
+        }
+
+        /* === सब्जेक्ट रो === */
+        .subject-row {
+            display: grid;
+            grid-template-columns: 1fr 110px 110px 40px;
+            gap: 12px;
+            align-items: center;
+            margin-bottom: 12px;
+            animation: fadeUp 0.35s ease-out both;
+        }
+
+        .subject-row input {
+            background: rgba(255,255,255,0.04);
+            border: 1.5px solid var(--card-border);
+            border-radius: 12px;
+            padding: 12px 14px;
+            color: var(--fg);
+            font-size: 0.9rem;
+            font-family: inherit;
+            transition: border-color 0.25s, box-shadow 0.25s, background 0.25s;
+            outline: none;
+        }
+        .subject-row input:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px var(--accent-dim);
+            background: rgba(255,255,255,0.06);
+        }
+        .subject-row input::placeholder {
+            color: #475569;
+        }
+        .subject-row input[type="number"] {
+            text-align: center;
+            -moz-appearance: textfield;
+        }
+        .subject-row input[type="number"]::-webkit-inner-spin-button,
+        .subject-row input[type="number"]::-webkit-outer-spin-button {
+            -webkit-appearance: none;
+        }
+
+        /* === डिलीट बटन === */
+        .btn-del {
+            width: 40px; height: 40px;
+            border-radius: 10px;
+            border: 1.5px solid var(--card-border);
+            background: transparent;
+            color: var(--muted);
+            cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 0.9rem;
+            transition: all 0.25s;
+        }
+        .btn-del:hover {
+            background: var(--danger-dim);
+            border-color: var(--danger);
+            color: var(--danger);
+            transform: scale(1.1);
+        }
+
+        /* === बटन === */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 13px 24px;
+            border-radius: 14px;
+            border: none;
+            font-family: inherit;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-add {
+            background: rgba(255,255,255,0.04);
+            border: 1.5px dashed var(--card-border);
+            color: var(--muted);
+            width: 100%;
+            justify-content: center;
+            margin-top: 4px;
+        }
+        .btn-add:hover {
+            border-color: var(--accent);
+            color: var(--accent);
+            background: var(--accent-dim);
+        }
+
+        .btn-calc {
+            background: linear-gradient(135deg, var(--accent), #00b8d4);
+            color: var(--bg);
+            width: 100%;
+            justify-content: center;
+            padding: 16px;
+            font-size: 1rem;
+            font-weight: 700;
+            box-shadow: 0 6px 28px rgba(0, 230, 138, 0.25);
+            margin-top: 8px;
+        }
+        .btn-calc:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 40px rgba(0, 230, 138, 0.35);
+        }
+        .btn-calc:active {
+            transform: translateY(0);
+        }
+
+        .btn-reset {
+            background: var(--danger-dim);
+            color: var(--danger);
+            border: 1.5px solid transparent;
+            width: 100%;
+            justify-content: center;
+            padding: 13px;
+            margin-top: 10px;
+        }
+        .btn-reset:hover {
+            border-color: var(--danger);
+            background: rgba(255, 77, 106, 0.18);
+        }
+
+        /* === रिजल्ट सेक्शन === */
+        .result-section {
+            display: none;
+        }
+        .result-section.show {
+            display: block;
+            animation: fadeUp 0.6s ease-out;
+        }
+
+        /* === सर्कल प्रोग्रेस === */
+        .circle-wrap {
+            display: flex;
+            justify-content: center;
+            margin: 24px 0 10px;
+        }
+        .circle-container {
+            position: relative;
+            width: 200px; height: 200px;
+        }
+        .circle-container svg {
+            transform: rotate(-90deg);
+        }
+        .circle-bg {
+            fill: none;
+            stroke: rgba(255,255,255,0.06);
+            stroke-width: 12;
+        }
+        .circle-fill {
+            fill: none;
+            stroke-width: 12;
+            stroke-linecap: round;
+            transition: stroke-dashoffset 1.5s ease-out, stroke 0.5s;
+        }
+        .circle-text {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        .circle-text .percent-num {
+            font-size: 3rem;
+            font-weight: 900;
+            line-height: 1;
+        }
+        .circle-text .percent-label {
+            font-size: 0.8rem;
+            color: var(--muted);
+            margin-top: 4px;
+            font-weight: 300;
+        }
+
+        /* === ग्रेड बैज === */
+        .grade-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 20px;
+            border-radius: 50px;
+            font-weight: 700;
+            font-size: 1rem;
+            margin: 10px auto;
+        }
+        .grade-badge.excellent {
+            background: var(--accent-dim);
+            color: var(--accent);
+            border: 1.5px solid rgba(0,230,138,0.3);
+        }
+        .grade-badge.good {
+            background: rgba(0,180,230,0.12);
+            color: #00b8e6;
+            border: 1.5px solid rgba(0,180,230,0.3);
+        }
+        .grade-badge.average {
+            background: var(--warn-dim);
+            color: var(--warn);
+            border: 1.5px solid rgba(255,184,48,0.3);
+        }
+        .grade-badge.fail {
+            background: var(--danger-dim);
+            color: var(--danger);
+            border: 1.5px solid rgba(255,77,106,0.3);
+        }
+
+        /* === स्टैट्स ग्रिड === */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+            margin-top: 24px;
+        }
+        .stat-box {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid var(--card-border);
+            border-radius: 14px;
+            padding: 16px;
+            text-align: center;
+            transition: transform 0.3s, border-color 0.3s;
+        }
+        .stat-box:hover {
+            transform: translateY(-3px);
+            border-color: rgba(0,230,138,0.15);
+        }
+        .stat-box .stat-val {
+            font-size: 1.5rem;
+            font-weight: 900;
+        }
+        .stat-box .stat-label {
+            font-size: 0.75rem;
+            color: var(--muted);
+            margin-top: 4px;
+            font-weight: 300;
+        }
+
+        /* === सब्जेक्ट वाइज रिजल्ट === */
+        .subject-result-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 16px;
+            border-radius: 12px;
+            margin-bottom: 8px;
+            background: rgba(255,255,255,0.02);
+            border: 1px solid transparent;
+            transition: all 0.3s;
+        }
+        .subject-result-row:hover {
+            background: rgba(255,255,255,0.04);
+            border-color: var(--card-border);
+        }
+        .sr-name {
+            font-weight: 500;
+            font-size: 0.9rem;
+            flex: 1;
+        }
+        .sr-marks {
+            font-size: 0.85rem;
+            color: var(--muted);
+            margin: 0 16px;
+        }
+        .sr-percent {
+            font-weight: 700;
+            font-size: 0.9rem;
+            min-width: 55px;
+            text-align: right;
+        }
+        .sr-bar-wrap {
+            width: 80px;
+            height: 6px;
+            background: rgba(255,255,255,0.06);
+            border-radius: 3px;
+            margin-left: 16px;
+            overflow: hidden;
+        }
+        .sr-bar {
+            height: 100%;
+            border-radius: 3px;
+            transition: width 1s ease-out;
+        }
+
+        /* === टोस्ट === */
+        .toast {
+            position: fixed;
+            top: 24px;
+            right: 24px;
+            z-index: 999;
+            padding: 14px 22px;
+            border-radius: 14px;
+            font-size: 0.88rem;
+            font-weight: 500;
+            font-family: inherit;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transform: translateX(120%);
+            transition: transform 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+            box-shadow: 0 10px 40px rgba(0,0,0,0.4);
+        }
+        .toast.show { transform: translateX(0); }
+        .toast.error {
+            background: #1a0a0e;
+            color: var(--danger);
+            border: 1px solid rgba(255,77,106,0.3);
+        }
+        .toast.success {
+            background: #0a1a10;
+            color: var(--accent);
+            border: 1px solid rgba(0,230,138,0.3);
+        }
+
+        /* === रेस्पॉन्सिव === */
+        @media (max-width: 640px) {
+            .subject-row {
+                grid-template-columns: 1fr 70px 70px 36px;
+                gap: 8px;
+            }
+            .subject-row input {
+                padding: 10px 10px;
+                font-size: 0.82rem;
+            }
+            .stats-grid {
+                grid-template-columns: repeat(3, 1fr);
+                gap: 8px;
+            }
+            .stat-box { padding: 12px 8px; }
+            .stat-box .stat-val { font-size: 1.2rem; }
+            .container { padding: 24px 14px 40px; }
+            .card { padding: 20px 16px; }
+            .sr-bar-wrap { display: none; }
+            .circle-container { width: 160px; height: 160px; }
+            .circle-text .percent-num { font-size: 2.4rem; }
+        }
+
+        /* === पार्टिकल्स === */
+        .particle {
+            position: fixed;
+            width: 3px; height: 3px;
+            background: var(--accent);
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 0;
+            opacity: 0;
+            animation: particleFly 6s linear infinite;
+        }
+        @keyframes particleFly {
+            0% { opacity: 0; transform: translateY(100vh) scale(0); }
+            10% { opacity: 0.6; }
+            90% { opacity: 0.2; }
+            100% { opacity: 0; transform: translateY(-10vh) scale(1); }
+        }
+
+        /* === रिजल्ट टेक्स्ट सेंटर === */
+        .text-center { text-align: center; }
+
+        /* === स्क्रॉलबार === */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: var(--bg); }
+        ::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 3px; }
+    </style>
+</head>
+<body>
+
+    <!-- बैकग्राउंड इफेक्ट्स -->
+    <div class="bg-glow one"></div>
+    <div class="bg-glow two"></div>
+    <div class="bg-glow three"></div>
+    <div class="grid-pattern"></div>
+
+    <!-- टोस्ट -->
+    <div class="toast" id="toast">
+        <i class="fas fa-exclamation-circle"></i>
+        <span id="toastMsg"></span>
+    </div>
+
+    <div class="container">
+        <!-- हेडर -->
+        <header class="header">
+            <div class="header-icon">
+                <i class="fas fa-calculator"></i>
+            </div>
+            <h1>Result Percentage Calculator</h1>
+            <p>विषयों के marks डालें और अपना result तुरंत देखें</p>
+        </header>
+
+        <!-- इनपुट कार्ड -->
+        <div class="card" style="animation-delay: 0.1s">
+            <div class="card-title">
+                <i class="fas fa-book-open"></i>
+                विषयों के Marks भरें
+            </div>
+
+            <!-- हेडर लेबल -->
+            <div class="subject-row" style="margin-bottom:6px; animation:none;">
+                <span style="font-size:0.75rem; color:var(--muted); font-weight:500;">विषय का नाम</span>
+                <span style="font-size:0.75rem; color:var(--muted); font-weight:500; text-align:center;">कुल Marks</span>
+                <span style="font-size:0.75rem; color:var(--muted); font-weight:500; text-align:center;">प्राप्त Marks</span>
+                <span></span>
+            </div>
+
+            <div id="subjectsContainer"></div>
+
+            <button class="btn btn-add" onclick="addSubject()">
+                <i class="fas fa-plus"></i>
+                विषय जोड़ें
+            </button>
+
+            <button class="btn btn-calc" onclick="calculateResult()">
+                <i class="fas fa-chart-pie"></i>
+                Percentage निकालें
+            </button>
+            <button class="btn btn-reset" onclick="resetAll()">
+                <i class="fas fa-rotate-left"></i>
+                सब मिटाएं
+            </button>
+        </div>
+
+        <!-- रिजल्ट कार्ड -->
+        <div class="result-section" id="resultSection">
+            <!-- मेन रिजल्ट -->
+            <div class="card" style="animation-delay: 0.15s">
+                <div class="card-title">
+                    <i class="fas fa-trophy"></i>
+                    आपका Result
+                </div>
+
+                <div class="circle-wrap">
+                    <div class="circle-container">
+                        <svg width="100%" height="100%" viewBox="0 0 200 200">
+                            <circle class="circle-bg" cx="100" cy="100" r="85"/>
+                            <circle class="circle-fill" id="circleFill" cx="100" cy="100" r="85"
+                                stroke-dasharray="534.07"
+                                stroke-dashoffset="534.07"/>
+                        </svg>
+                        <div class="circle-text">
+                            <span class="percent-num" id="percentNum">0%</span>
+                            <span class="percent-label">Percentage</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="text-center">
+                    <div class="grade-badge" id="gradeBadge">
+                        <i class="fas fa-star"></i>
+                        <span id="gradeText"></span>
+                    </div>
+                </div>
+
+                <div class="stats-grid">
+                    <div class="stat-box">
+                        <div class="stat-val" id="totalObtained" style="color: var(--accent);">0</div>
+                        <div class="stat-label">कुल प्राप्त Marks</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-val" id="totalMax" style="color: #00b8e6;">0</div>
+                        <div class="stat-label">कुल Marks</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-val" id="totalSubjects" style="color: var(--warn);">0</div>
+                        <div class="stat-label">कुल विषय</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- विषयवार रिजल्ट -->
+            <div class="card" style="animation-delay: 0.25s">
+                <div class="card-title">
+                    <i class="fas fa-list-check"></i>
+                    विषयवार Result
+                </div>
+                <div id="subjectResultList"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // === पार्टिकल्स बनाएं ===
+        (function createParticles() {
+            const body = document.body;
+            for (let i = 0; i < 15; i++) {
+                const p = document.createElement('div');
+                p.className = 'particle';
+                p.style.left = Math.random() * 100 + '%';
+                p.style.animationDelay = Math.random() * 6 + 's';
+                p.style.animationDuration = (5 + Math.random() * 4) + 's';
+                p.style.width = p.style.height = (2 + Math.random() * 3) + 'px';
+                p.style.background = ['#00e68a', '#00b8e6', '#ffb830'][Math.floor(Math.random() * 3)];
+                body.appendChild(p);
+            }
+        })();
+
+        // === डिफॉल्ट विषय ===
+        const defaultSubjects = [
+            { name: 'Hindi', max: 100, obtained: '' },
+            { name: 'English', max: 100, obtained: '' },
+            { name: 'Mathematics', max: 100, obtained: '' },
+            { name: 'Science', max: 100, obtained: '' },
+            { name: 'Social Science', max: 100, obtained: '' },
+        ];
+
+        let subjectCount = 0;
+        const container = document.getElementById('subjectsContainer');
+
+        // === विषय जोड़ें ===
+        function addSubject(name = '', max = 100, obtained = '') {
+            subjectCount++;
+            const row = document.createElement('div');
+            row.className = 'subject-row';
+            row.id = 'row-' + subjectCount;
+            row.style.animationDelay = '0.05s';
+            row.innerHTML = `
+                <input type="text" placeholder="विषय का नाम" value="${name}" />
+                <input type="number" placeholder="कुल" value="${max}" min="1" />
+                <input type="number" placeholder="प्राप्त" value="${obtained}" min="0" />
+                <button class="btn-del" onclick="removeSubject('row-${subjectCount}')" title="हटाएं">
+                    <i class="fas fa-xmark"></i>
+                </button>
+            `;
+            container.appendChild(row);
+        }
+
+        // === विषय हटाएं ===
+        function removeSubject(id) {
+            const rows = container.querySelectorAll('.subject-row');
+            if (rows.length <= 1) {
+                showToast('कम से कम 1 विषय ज़रूरी है', 'error');
+                return;
+            }
+            const row = document.getElementById(id);
+            if (row) {
+                row.style.transition = 'opacity 0.3s, transform 0.3s';
+                row.style.opacity = '0';
+                row.style.transform = 'translateX(30px)';
+                setTimeout(() => row.remove(), 300);
+            }
+        }
+
+        // === टोस्ट ===
+        function showToast(msg, type = 'error') {
+            const toast = document.getElementById('toast');
+            const toastMsg = document.getElementById('toastMsg');
+            toast.className = 'toast ' + type;
+            toastMsg.textContent = msg;
+            toast.querySelector('i').className = type === 'error'
+                ? 'fas fa-exclamation-circle'
+                : 'fas fa-check-circle';
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), 3000);
+        }
+
+        // === रिजल्ट कैलकुलेट ===
+        function calculateResult() {
+            const rows = container.querySelectorAll('.subject-row');
+            if (rows.length === 0) {
+                showToast('पहले कोई विषय जोड़ें', 'error');
+                return;
+            }
+
+            let totalObtained = 0;
+            let totalMax = 0;
+            let hasError = false;
+            const subjectData = [];
+
+            rows.forEach(row => {
+                const inputs = row.querySelectorAll('input');
+                const name = inputs[0].value.trim() || 'अनाम विषय';
+                const max = parseFloat(inputs[1].value);
+                const obtained = parseFloat(inputs[2].value);
+
+                if (isNaN(max) || max <= 0) {
+                    hasError = true;
+                    inputs[1].style.borderColor = 'var(--danger)';
+                    inputs[1].style.boxShadow = '0 0 0 3px var(--danger-dim)';
+                    setTimeout(() => {
+                        inputs[1].style.borderColor = '';
+                        inputs[1].style.boxShadow = '';
+                    }, 2000);
+                }
+                if (isNaN(obtained) || obtained < 0) {
+                    hasError = true;
+                    inputs[2].style.borderColor = 'var(--danger)';
+                    inputs[2].style.boxShadow = '0 0 0 3px var(--danger-dim)';
+                    setTimeout(() => {
+                        inputs[2].style.borderColor = '';
+                        inputs[2].style.boxShadow = '';
+                    }, 2000);
+                }
+                if (!hasError && obtained > max) {
+                    hasError = true;
+                    inputs[2].style.borderColor = 'var(--danger)';
+                    inputs[2].style.boxShadow = '0 0 0 3px var(--danger-dim)';
+                    showToast(`"${name}" में प्राप्त marks कुल से ज़्यादा नहीं हो सकते`, 'error');
+                    setTimeout(() => {
+                        inputs[2].style.borderColor = '';
+                        inputs[2].style.boxShadow = '';
+                    }, 2000);
+                }
+
+                if (!isNaN(max) && !isNaN(obtained) && max > 0 && obtained >= 0 && obtained <= max) {
+                    totalMax += max;
+                    totalObtained += obtained;
+                    const percent = (obtained / max) * 100;
+                    subjectData.push({ name, max, obtained, percent });
+                }
+            });
+
+            if (hasError || subjectData.length === 0) {
+                if (!hasError) showToast('सभी विषयों के marks सही भरें', 'error');
+                return;
+            }
+
+            const percentage = (totalObtained / totalMax) * 100;
+
+            // === ग्रेड तय करें ===
+            let grade, gradeClass, gradeIcon;
+            if (percentage >= 90) {
+                grade = 'Outstanding - A+'; gradeClass = 'excellent'; gradeIcon = 'fa-crown';
+            } else if (percentage >= 80) {
+                grade = 'Excellent - A'; gradeClass = 'excellent'; gradeIcon = 'fa-star';
+            } else if (percentage >= 70) {
+                grade = 'Very Good - B+'; gradeClass = 'good'; gradeIcon = 'fa-thumbs-up';
+            } else if (percentage >= 60) {
+                grade = 'Good - B'; gradeClass = 'good'; gradeIcon = 'fa-face-smile';
+            } else if (percentage >= 50) {
+                grade = 'Average - C'; gradeClass = 'average'; gradeIcon = 'fa-face-meh';
+            } else if (percentage >= 33) {
+                grade = 'Pass - D'; gradeClass = 'average'; gradeIcon = 'fa-check';
+            } else {
+                grade = 'Fail - F'; gradeClass = 'fail'; gradeIcon = 'fa-circle-xmark';
+            }
+
+            // === सर्कल एनिमेशन ===
+            const circle = document.getElementById('circleFill');
+            const circumference = 534.07;
+            const offset = circumference - (percentage / 100) * circumference;
+
+            // रंग तय करें
+            let strokeColor;
+            if (percentage >= 80) strokeColor = '#00e68a';
+            else if (percentage >= 60) strokeColor = '#00b8e6';
+            else if (percentage >= 33) strokeColor = '#ffb830';
+            else strokeColor = '#ff4d6a';
+
+            circle.style.stroke = strokeColor;
+            circle.style.strokeDashoffset = circumference; // रीसेट
+            requestAnimationFrame(() => {
+                requestAnimationFrame(() => {
+                    circle.style.strokeDashoffset = offset;
+                });
+            });
+
+            // === नंबर काउंट अप ===
+            const percentNum = document.getElementById('percentNum');
+            percentNum.style.color = strokeColor;
+            animateNumber(percentNum, 0, percentage, 1200);
+
+            // === ग्रेड बैज ===
+            const badge = document.getElementById('gradeBadge');
+            badge.className = 'grade-badge ' + gradeClass;
+            badge.querySelector('i').className = 'fas ' + gradeIcon;
+            document.getElementById('gradeText').textContent = grade;
+
+            // === स्टैट्स ===
+            document.getElementById('totalObtained').textContent = totalObtained;
+            document.getElementById('totalMax').textContent = totalMax;
+            document.getElementById('totalSubjects').textContent = subjectData.length;
+
+            // === विषयवार रिजल्ट ===
+            const list = document.getElementById('subjectResultList');
+            list.innerHTML = '';
+            subjectData.forEach((s, i) => {
+                let barColor;
+                if (s.percent >= 80) barColor = '#00e68a';
+                else if (s.percent >= 60) barColor = '#00b8e6';
+                else if (s.percent >= 33) barColor = '#ffb830';
+                else barColor = '#ff4d6a';
+
+                let percentColor;
+                if (s.percent >= 80) percentColor = 'var(--accent)';
+                else if (s.percent >= 60) percentColor = '#00b8e6';
+                else if (s.percent >= 33) percentColor = 'var(--warn)';
+                else percentColor = 'var(--danger)';
+
+                const div = document.createElement('div');
+                div.className = 'subject-result-row';
+                div.style.animationDelay = (i * 0.08) + 's';
+                div.innerHTML = `
+                    <span class="sr-name">${s.name}</span>
+                    <span class="sr-marks">${s.obtained} / ${s.max}</span>
+                    <span class="sr-percent" style="color:${percentColor}">${s.percent.toFixed(1)}%</span>
+                    <div class="sr-bar-wrap">
+                        <div class="sr-bar" style="width:0%; background:${barColor};" data-width="${Math.min(s.percent, 100)}%"></div>
+                    </div>
+                `;
+                list.appendChild(div);
+            });
+
+            // बार एनिमेशन
+            setTimeout(() => {
+                list.querySelectorAll('.sr-bar').forEach(bar => {
+                    bar.style.width = bar.dataset.width;
+                });
+            }, 100);
+
+            // रिजल्ट दिखाएं
+            const resultSection = document.getElementById('resultSection');
+            resultSection.classList.add('show');
+            resultSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+            showToast('Result तैयार है!', 'success');
+        }
+
+        // === नंबर काउंट अप एनिमेशन ===
+        function animateNumber(el, from, to, duration) {
+            const start = performance.now();
+            function update(now) {
+                const elapsed = now - start;
+                const progress = Math.min(elapsed / duration, 1);
+                // ease-out
+                const eased = 1 - Math.pow(1 - progress, 3);
+                const current = from + (to - from) * eased;
+                el.textContent = current.toFixed(1) + '%';
+                if (progress < 1) requestAnimationFrame(update);
+            }
+            requestAnimationFrame(update);
+        }
+
+        // === सब रीसेट ===
+        function resetAll() {
+            container.innerHTML = '';
+            subjectCount = 0;
+            document.getElementById('resultSection').classList.remove('show');
+            defaultSubjects.forEach(s => addSubject(s.name, s.max, s.obtained));
+            showToast('सब रीसेट हो गया', 'success');
+        }
+
+        // === शुरू में डिफॉल्ट विषय लोड करें ===
+        defaultSubjects.forEach(s => addSubject(s.name, s.max, s.obtained));
+
+        // === Enter लगाने से कैलकुलेट हो ===
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') calculateResult();
+        });
+    </script>
+</body>
+</html>
